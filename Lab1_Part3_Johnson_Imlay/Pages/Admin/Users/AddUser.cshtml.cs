@@ -9,7 +9,6 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Users
 {
     public class AddUserModel : PageModel
     {
-        private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
 
         [BindProperty, Required]
         public string Username { get; set; } = "";
