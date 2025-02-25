@@ -11,7 +11,6 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Faculty.Grants
     public class GrantApplication : PageModel
     {
         private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
-
         [BindProperty, Required]
         public string Category { get; set; } = "";
 
