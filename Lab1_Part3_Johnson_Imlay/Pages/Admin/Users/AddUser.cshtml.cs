@@ -52,7 +52,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Users
             {
                 BusinessPartners = LoadBusinessPartners();
                 return Page();
-            }
+            }///This if statement checks to ensure that the model state is valid. If it is not, the page is reloaded with the business partners reloaded as well.
 
             try
             {

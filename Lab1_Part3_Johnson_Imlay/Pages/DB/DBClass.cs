@@ -41,6 +41,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        //Comment 1: This method inserts a new user into the database. It takes in the user's username, password, email, first name, last name, user type, department, admin type, and business partner ID. It then creates a new connection to the database and uses a query to insert the user's information into the User table. The method returns the number of rows affected by the query.
         public static List<BusinessPartner> GetBusinessPartners()
         {
             List<BusinessPartner> partners = new List<BusinessPartner>();
