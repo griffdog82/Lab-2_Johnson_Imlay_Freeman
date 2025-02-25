@@ -16,7 +16,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
         // Connection String - How to find and connect to DB
         private static readonly String? Lab1DBConnString =
             "Server=Localhost;Database=Lab1;Trusted_Connection=True";
-
+        // Commit 2 
         public static int InsertUser(string username, string password, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
         {
             using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
