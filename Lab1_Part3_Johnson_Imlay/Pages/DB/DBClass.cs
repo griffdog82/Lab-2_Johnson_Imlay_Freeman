@@ -16,32 +16,9 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
         // Connection String - How to find and connect to DB
         private static readonly String? Lab1DBConnString =
             "Server=Localhost;Database=Lab1;Trusted_Connection=True";
-        // Commit 2 
-        public static int InsertUser(string username, string password, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
-        {
-            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
-            {
-                string query = @"INSERT INTO [User] 
-                                 (Username, Password, Email, FirstName, LastName, UserType, Department, AdminType, BusinessPartnerID) 
-                                 VALUES (@Username, @Password, @Email, @FirstName, @LastName, @UserType, @Department, @AdminType, @BusinessPartnerID)";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@Username", username);
-                    cmd.Parameters.AddWithValue("@Password", password);
-                    cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : email);
-                    cmd.Parameters.AddWithValue("@FirstName", firstName);
-                    cmd.Parameters.AddWithValue("@LastName", lastName);
-                    cmd.Parameters.AddWithValue("@UserType", userType);
-                    cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(department) ? DBNull.Value : department);
-                    cmd.Parameters.AddWithValue("@AdminType", string.IsNullOrEmpty(adminType) ? DBNull.Value : adminType);
-                    cmd.Parameters.AddWithValue("@BusinessPartnerID", businessPartnerID.HasValue ? businessPartnerID.Value : DBNull.Value);
+        
 
-                    conn.Open();
-                    return cmd.ExecuteNonQuery();
-                }
-            }
-        }
-        //This should directly conflict with Griffin's changes
+        
 
         public static bool AddUser(string username, string password, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
         {
@@ -68,11 +45,107 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        public static bool EditUser(int userID, string username, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = @"UPDATE [User] 
+                        SET Username = @Username, Email = @Email, FirstName = @FirstName, LastName = @LastName, 
+                            UserType = @UserType, Department = @Department, AdminType = @AdminType, BusinessPartnerID = @BusinessPartnerID
+                        WHERE UserID = @UserID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userID);
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : email);
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.Parameters.AddWithValue("@LastName", lastName);
+                    cmd.Parameters.AddWithValue("@UserType", userType);
+                    cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(department) ? DBNull.Value : department);
+                    cmd.Parameters.AddWithValue("@AdminType", string.IsNullOrEmpty(adminType) ? DBNull.Value : adminType);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", businessPartnerID.HasValue ? businessPartnerID.Value : DBNull.Value);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
 
         // This method should allow Ezell's comments to be rectified and the method to be used in the AddUser.cshtml.cs file
+        public static List<UserModel> LoadUsers()
+        {
+            List<UserModel> users = new();
 
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(@"
+            SELECT u.UserID, u.Username, u.Email, u.FirstName, u.LastName, u.UserType, 
+                   u.Department, u.AdminType, b.Name AS BusinessPartnerName
+            FROM [User] u
+            LEFT JOIN BusinessPartner b ON u.BusinessPartnerID = b.BusinessPartnerID", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        users.Add(new UserModel
+                        {
+                            UserID = reader.GetInt32(0),
+                            Username = reader.GetString(1),
+                            Email = reader.IsDBNull(2) ? "N/A" : reader.GetString(2),
+                            FirstName = reader.GetString(3),
+                            LastName = reader.GetString(4),
+                            UserType = reader.GetString(5),
+                            Department = reader.IsDBNull(6) ? "N/A" : reader.GetString(6),
+                            AdminType = reader.IsDBNull(7) ? "N/A" : reader.GetString(7),
+                            BusinessPartnerID = reader.IsDBNull(8) ? "N/A" : reader.GetString(8)
+                        });
+                    }
+                }
+            }
 
+            return users;
+        } //This should replace the old method located in the ViewUsers.cshtml.cs file. This method is called in the OnGet method of the EditUser.cshtml.cs file.
 
+        public static string? LoadProjectTitle(int projectID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT Title FROM Project WHERE ProjectID = @ProjectID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static bool AddTask(int projectID, string description, DateTime dueDate, string status)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "INSERT INTO Task (ProjectID, Description, DueDate, Status) VALUES (@ProjectID, @Description, @DueDate, @Status)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    cmd.Parameters.AddWithValue("@Description", description);
+                    cmd.Parameters.AddWithValue("@DueDate", dueDate);
+                    cmd.Parameters.AddWithValue("@Status", status);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
 
 
 
@@ -104,14 +177,18 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             public string Name { get; set; } = "";
         }
 
-         public static List<UserModel> GetFacultyMembers()
+        public static List<UserModel> GetFacultyMembers()
         {
             List<UserModel> facultyList = new List<UserModel>();
 
             using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
             {
                 conn.Open();
-                string query = "SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User] WHERE UserType = 'Faculty'";
+                string query = @"
+            SELECT UserID, Username, Email, FirstName, LastName, UserType, 
+                   Department, AdminType, BusinessPartnerID
+            FROM [User] 
+            WHERE UserType = 'Faculty'";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -121,7 +198,14 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                         facultyList.Add(new UserModel
                         {
                             UserID = reader.GetInt32(0),
-                            FullName = reader.GetString(1)
+                            Username = reader.GetString(1),
+                            Email = reader.IsDBNull(2) ? null : reader.GetString(2),
+                            FirstName = reader.GetString(3),
+                            LastName = reader.GetString(4),
+                            UserType = reader.GetString(5),
+                            Department = reader.IsDBNull(6) ? null : reader.GetString(6),
+                            AdminType = reader.IsDBNull(7) ? null : reader.GetString(7),
+                            // TODO BusinessPartnerID = reader.IsDBNull(8) ? (int?)null : reader.GetInt32(8) @Nicole -> Fix Me!
                         });
                     }
                 }
@@ -129,6 +213,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
             return facultyList;
         }
+
 
         // Retrieves projects for a specific faculty member or all projects if no facultyId is specified
         public static List<ProjectModel> GetProjectsByFacultyID(int? facultyId)
@@ -185,12 +270,19 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             return projectList;
         }
 
-        // Define the UserModel and ProjectModel within DBClass for use
         public class UserModel
         {
             public int UserID { get; set; }
-            public string FullName { get; set; } = "";
-        }
+            public string Username { get; set; } = "";
+            public string Email { get; set; } = "";
+            public string FirstName { get; set; } = "";
+            public string LastName { get; set; } = "";
+            public string UserType { get; set; } = "";
+            public string? Department { get; set; }
+            public string? AdminType { get; set; }
+            public string? BusinessPartnerID { get; set; }
+        } //This object replaces the old one in the ViewUsers.cshtml.cs file. This object is used in the LoadUsers method.
+
 
         public class ProjectModel
         {
@@ -202,11 +294,10 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             public string? GrantInfo { get; set; }
         }
 
-        //Connection Methods:
+        //Connection Methodsb ---   These methods are used to connect to the database and retrieve data from the database.
 
         //Basic Product Reader
 
-        //Leave alone for now, no need to overhaul. Maybe on Capstone
         public static SqlDataReader UserReader()
         {
             SqlCommand cmdProductRead = new SqlCommand();

@@ -1,3 +1,4 @@
+using Lab1_Part3_Johnson_Imlay.Pages.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
@@ -8,7 +9,6 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
 {
     public class AddTaskModel : PageModel
     {
-        private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
 
         [BindProperty]
         public int ProjectID { get; set; }
@@ -30,42 +30,29 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
         public void OnGet(int projectId)
         {
             ProjectID = projectId;
-            LoadProjectTitle();
+            ProjectTitle = DBClass.LoadProjectTitle(ProjectID) ?? "Unknown Project"; // Uses null-coalescing operator to set ProjectTitle to "Unknown Project" if LoadProjectTitle returns null. https://www.geeksforgeeks.org/null-coalescing-operator-in-c-sharp/ 
         }
 
         public IActionResult OnPost()
         {
             if (!ModelState.IsValid)
             {
-                LoadProjectTitle();
+                ProjectTitle = DBClass.LoadProjectTitle(ProjectID) ?? "Unknown Project";
                 return Page();
             }
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                bool success = DBClass.AddTask(ProjectID, Description, DueDate, Status);
+
+                if (success)
                 {
-                    conn.Open();
-                    string query = "INSERT INTO Task (ProjectID, Description, DueDate, Status) VALUES (@ProjectID, @Description, @DueDate, @Status)";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@ProjectID", ProjectID);
-                        cmd.Parameters.AddWithValue("@Description", Description);
-                        cmd.Parameters.AddWithValue("@DueDate", DueDate);
-                        cmd.Parameters.AddWithValue("@Status", Status);
-
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            Message = "Task added successfully!";
-                            return RedirectToPage("/Admin/Projects/ProjectTaskManagement", new { id = ProjectID });
-                        }
-                        else
-                        {
-                            Message = "Error adding task.";
-                        }
-                    }
+                    Message = "Task added successfully!";
+                    return RedirectToPage("/Admin/Projects/ProjectTaskManagement", new { id = ProjectID });
+                }
+                else
+                {
+                    Message = "Error adding task.";
                 }
             }
             catch (Exception ex)
@@ -73,27 +60,11 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
                 Message = "Database Error: " + ex.Message;
             }
 
-            LoadProjectTitle();
+            ProjectTitle = DBClass.LoadProjectTitle(ProjectID) ?? "Unknown Project";
             return Page();
         }
 
-        private void LoadProjectTitle()
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT Title FROM Project WHERE ProjectID = @ProjectID", conn))
-                {
-                    cmd.Parameters.AddWithValue("@ProjectID", ProjectID);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            ProjectTitle = reader.GetString(0);
-                        }
-                    }
-                }
-            }
-        }
+
+
     }
 }
