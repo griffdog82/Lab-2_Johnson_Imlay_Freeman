@@ -41,6 +41,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        //This should directly conflict with Griffin's changes
         public static List<BusinessPartner> GetBusinessPartners()
         {
             List<BusinessPartner> partners = new List<BusinessPartner>();
