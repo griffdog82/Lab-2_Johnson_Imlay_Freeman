@@ -1,0 +1,27 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.BusinessPartner.BusinessPartnerDashboardModel
+@{
+    ViewData["Title"] = "Business Partner Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">🏢 Business Partner Dashboard</h2>
+
+    <div class="list-group">
+        <a asp-page="/BusinessPartner/ViewGrants" class="list-group-item list-group-item-action">
+            💵 View Grants
+        </a>
+        <a asp-page="/BusinessPartner/ViewMeetingMinutes" class="list-group-item list-group-item-action">
+            📝 View Meeting Minutes
+        </a>
+        <a asp-page="/BusinessPartner/AddMeetingMinutes" class="list-group-item list-group-item-action">
+            ➕ Add Meeting Minutes
+        </a>
+        <a asp-page="/BusinessPartner/ComposeMessage" class="list-group-item list-group-item-action">
+            ✉️ Compose Message
+        </a>
+        <a asp-page="/BusinessPartner/ViewMessages" class="list-group-item list-group-item-action">
+            📩 View Messages
+        </a>
+    </div>
+</div>

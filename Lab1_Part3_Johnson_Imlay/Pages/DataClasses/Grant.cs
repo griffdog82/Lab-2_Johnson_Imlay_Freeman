@@ -3,6 +3,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DataClasses
     public class Grant
     {
         public int GrantID { get; set; }
+        public string GrantName { get; set; }
         public string Category { get; set; }
         public string FundingSource { get; set; }
         public DateTime SubmissionDate { get; set; }

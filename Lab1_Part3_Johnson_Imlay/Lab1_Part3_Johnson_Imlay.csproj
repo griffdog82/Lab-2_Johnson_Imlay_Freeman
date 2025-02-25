@@ -7,22 +7,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Pages\NewFolder\**" />
-    <Content Remove="Pages\NewFolder\**" />
-    <EmbeddedResource Remove="Pages\NewFolder\**" />
-    <None Remove="Pages\NewFolder\**" />
+    <Compile Remove="Pages\NewFolder1\**" />
+    <Content Remove="Pages\NewFolder1\**" />
+    <EmbeddedResource Remove="Pages\NewFolder1\**" />
+    <None Remove="Pages\NewFolder1\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Pages\Admin\Projects\ProjectTaskManagement.chstml.cs" />
+    <Compile Remove="Pages\Admin\Tasks\AddTasks.cshtml.cs" />
+    <Compile Remove="Pages\BusinessPartner\EditMeetingMinutes.cshtml.cs" />
     <Compile Remove="Pages\DataClasses\BusinessPartner - Copy.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <Content Remove="Pages\Admin\Tasks\AddTasks.cshtml" />
+    <Content Remove="Pages\BusinessPartner\EditMeetingMinutes.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Pages\NewFolder1\" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
   </ItemGroup>
 
 </Project>

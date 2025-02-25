@@ -1,0 +1,35 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.Faculty.Grants.GrantDetailsModel
+@{
+    ViewData["Title"] = "Grant Details";
+}
+
+<h2>Grant Details</h2>
+
+<div>
+    <strong>Grant Name:</strong> @Model.GrantName
+</div>
+<div>
+    <strong>Category:</strong> @Model.Category
+</div>
+<div>
+    <strong>Funding Source:</strong> @Model.FundingSource
+</div>
+<div>
+    <strong>Submission Date:</strong> @Model.SubmissionDate.ToString("yyyy-MM-dd")
+</div>
+<div>
+    <strong>Award Date:</strong> @Model.AwardDate.ToString("yyyy-MM-dd")
+</div>
+<div>
+    <strong>Amount:</strong> @Model.Amount
+</div>
+<div>
+    <strong>Lead Faculty ID:</strong> @Model.LeadFacultyID
+</div>
+<div>
+    <strong>Business Partner ID:</strong> @Model.BusinessPartnerID
+</div>
+<div>
+    <strong>Status:</strong> @Model.Status
+</div>

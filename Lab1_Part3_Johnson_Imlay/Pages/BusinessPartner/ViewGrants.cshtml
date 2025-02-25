@@ -1,0 +1,43 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.BusinessPartner.ViewGrantsModel
+@{
+    ViewData["Title"] = "Grants";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">💰 Available Grants</h2>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Grant Name</th>
+                <th>Category</th>
+                <th>Funding Source</th>
+                <th>Submission Date</th>
+                <th>Award Date</th>
+                <th>Amount ($)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var grant in Model.Grants)
+            {
+                <tr>
+                    <td>@grant.GrantName</td>
+                    <td>@grant.Category</td>
+                    <td>@grant.FundingSource</td>
+                    <td>@grant.SubmissionDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(grant.AwardDate?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                    <td>@grant.Amount.ToString("C")</td>
+                    <td>
+                        <span class="badge @(grant.Status == "Approved" ? "bg-success" : grant.Status == "Pending" ? "bg-warning text-dark" : "bg-danger")">
+                            @grant.Status
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-page="/BusinessPartner/BusinessPartner_Dashboard" class="btn btn-secondary">⬅ Back to Dashboard</a>
+</div>

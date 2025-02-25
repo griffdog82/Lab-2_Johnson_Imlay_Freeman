@@ -9,5 +9,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DataClasses
         public string BusinessType { get; set; }
         public string StatusFlag { get; set; }
         public bool ActiveStatus { get; set; }
+
+        //Changed this file for commit 2
     }
 }

@@ -1,0 +1,34 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.Admin.BusinessPartners.ViewBusinessPartnersModel
+@{
+    ViewData["Title"] = "Business Partners";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3">🤝 Business Partners</h2>
+
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Name</th>
+                <th>Organization Type</th>
+                <th>Primary Contact</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var partner in Model.BusinessPartners)
+            {
+                <tr>
+                    <td>@partner.Name</td>
+                    <td>@partner.OrgType</td>
+                    <td>@partner.PrimaryContact</td>
+                    <td>@(partner.ActiveStatus ? "Active" : "Inactive")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-page="AddBusinessPartner" class="btn btn-success">➕ Add Business Partner</a>
+    <a asp-page="/Admin/Admin_Dashboard" class="btn btn-secondary">⬅ Back to Dashboard</a>
+</div>

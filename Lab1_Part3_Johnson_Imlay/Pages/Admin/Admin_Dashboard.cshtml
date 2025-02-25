@@ -1,0 +1,50 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.Admin.AdminDashboardModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-3 text-center">📌 Admin Dashboard</h2>
+
+    <div class="list-group">
+        <a asp-page="/Admin/Users/AddUser" class="list-group-item list-group-item-action">
+            👤 Add New User
+        </a>
+        <a asp-page="/Admin/Users/ViewUsers" class="list-group-item list-group-item-action">
+            👥 View Users
+        </a>
+        <a asp-page="/Admin/Projects/AddProject" class="list-group-item list-group-item-action">
+            🏗️ Add New Project
+        </a>
+        <a asp-page="/Admin/Projects/ProjectList" class="list-group-item list-group-item-action">
+            📋 View Current Projects
+        </a>
+        @* Future Features
+        <a asp-page="/Admin/Projects/ProjectTaskManagement" class="list-group-item list-group-item-action">
+            🛠️ Project Task Management
+        </a>
+        <a asp-page="/Admin/Tasks/AddTask" class="list-group-item list-group-item-action">
+            ➕ Add New Task
+        </a>
+        <a asp-page="/Admin/Tasks/EditTask" class="list-group-item list-group-item-action">
+            ✏️ Edit Task
+        </a> 
+        *@
+        <a asp-page="/Admin/Messages/MessageList" class="list-group-item list-group-item-action">
+            📩 View Messages
+        </a>
+        <a asp-page="/Admin/Messages/ComposeMessage" class="list-group-item list-group-item-action">
+            ✉️ Compose New Message
+        </a>
+        <a asp-page="/Admin/Grants/AddGrant" class="list-group-item list-group-item-action">
+            💰 Add New Grant
+        </a>
+        <a asp-page="/Admin/BusinessPartner/AddBusinessPartner" class="list-group-item list-group-item-action">
+            🤝 Add New Business Partner
+        </a>
+        <a asp-page="/Admin/BusinessPartner/ViewBusinessPartners" class="list-group-item list-group-item-action">
+            🤝 View Business Partners
+        </a>
+    </div>
+</div>

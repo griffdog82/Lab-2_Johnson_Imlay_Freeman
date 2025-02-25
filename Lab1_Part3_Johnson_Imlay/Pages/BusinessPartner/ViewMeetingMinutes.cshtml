@@ -1,0 +1,25 @@
+﻿@page
+@model Lab1_Part3_Johnson_Imlay.Pages.BusinessPartner.ViewMeetingMinutesModel
+
+<h2>View Meeting Minutes</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Meeting Date</th>
+            <th>Minutes</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var meeting in Model.MeetingMinutes)
+        {
+            <tr>
+                <td>@meeting.MeetingDate</td>
+                <td>@meeting.MinutesText</td>
+                <td>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
