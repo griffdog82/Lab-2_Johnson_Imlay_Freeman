@@ -15,7 +15,8 @@
                 @foreach (var faculty in Model.FacultyMembers)
                 {
                     <option value="@faculty.UserID" selected="@(Model.SelectedFacultyID == faculty.UserID ? "selected" : null)">
-                        @faculty.FullName
+                      @*  TODO:  faculty.FullName @Nicole -> Fix me, faculty no longer has a full name*@
+
                     </option>
                 }
             </select>
