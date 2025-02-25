@@ -1,0 +1,144 @@
+USE Lab1;
+
+CREATE TABLE BusinessPartner (
+	BusinessPartnerID int identity(1,1) primary key,
+	Name nvarchar(200) not null,
+	OrgType nvarchar(100) not null,
+	PrimaryContact nvarchar(200) null,
+	BusinessType nvarchar(100) not null,
+	StatusFlag nvarchar(100) not null,
+	ActiveStatus bit not null default 1
+);
+
+CREATE TABLE [User] (
+	UserID int identity(1,1) primary key,
+	Username nvarchar(200) unique not null,
+	Password nvarchar(200) not null,
+	Email nvarchar(200) unique,
+	FirstName nvarchar(200) not null,
+	LastName nvarchar(200) not null,
+	UserType nvarchar(50) not null,
+	Department nvarchar(200),
+	AdminType nvarchar(200),
+	BusinessPartnerID int null,
+	foreign key (BusinessPartnerID) references BusinessPartner(BusinessPartnerID)
+);
+
+CREATE TABLE [Grant] (
+	GrantID int identity(1,1) primary key,
+	GrantName nvarchar(100) not null,
+	Category nvarchar(100) not null,
+	FundingSource nvarchar(200) not null,
+	SubmissionDate date not null,
+	AwardDate date null,
+	Amount decimal(18,2) not null,
+	Status nvarchar(100) not null,
+	LeadFacultyID int not null,  
+	BusinessPartnerID int null,  
+	foreign key (LeadFacultyID) references [User](UserID),
+	foreign key (BusinessPartnerID) references BusinessPartner(BusinessPartnerID)
+);
+
+CREATE TABLE GrantTeam (
+	GrantID int not null,
+	FacultyID int not null,
+	primary key (GrantID, FacultyID),
+	foreign key (GrantID) references [Grant](GrantID),
+	foreign key (FacultyID) references [User](UserID)
+);
+
+CREATE TABLE Project (
+	ProjectID int identity(1,1) primary key,
+	Title nvarchar(200) not null,
+	DueDate date not null,
+	CreatedBy int not null,
+	BusinessPartnerID int null,
+	GrantID int null,
+	foreign key (CreatedBy) references [User](UserID),
+	foreign key (BusinessPartnerID) references BusinessPartner(BusinessPartnerID),
+	foreign key (GrantID) references [Grant](GrantID)
+);
+
+CREATE TABLE ProjectAssignment (
+	ProjectID int not null,
+	UserID int not null,
+	Role nvarchar(100) not null,
+	primary key (ProjectID, UserID),
+	foreign key (ProjectID) references Project(ProjectID),
+	foreign key (UserID) references [User](UserID)
+);
+
+CREATE TABLE Task (
+	TaskID int identity(1,1) primary key,
+	ProjectID int not null,
+	Description nvarchar(500) not null,
+	DueDate date not null,
+	Status nvarchar(100) not null,
+	foreign key (ProjectID) references Project(ProjectID)
+);
+
+CREATE TABLE MeetingMinute (
+	MinuteID int identity(1,1) primary key,
+	BusinessPartnerID int not null,
+	RepresentativeID int not null,
+	MeetingWithID int not null,
+	MeetingDate date not null,
+	MinutesText nvarchar(1000) not null,
+	foreign key (BusinessPartnerID) references BusinessPartner(BusinessPartnerID),
+	foreign key (RepresentativeID) references [User](UserID),
+	foreign key (MeetingWithID) references [User](UserID)
+);
+
+CREATE TABLE Message (
+	MessageID int identity(1,1) primary key,
+	SenderID int not null,
+	RecipientID int not null,
+	Subject nvarchar(200) null,
+	Body nvarchar(2000) not null,
+	Timestamp datetime not null default getdate(),
+	foreign key (SenderID) references [User](UserID),
+	foreign key (RecipientID) references [User](UserID)
+);
+
+-- Ensures business partner records are inserted with various organization types
+INSERT INTO BusinessPartner (Name, OrgType, PrimaryContact, BusinessType, StatusFlag, ActiveStatus)
+VALUES 
+('Better Call Saul LLC', 'Law Firm', 'Saul Goodman', 'Legal Services', 'Active', 1), 
+('Los Pollos Hermanos', 'Corporation', 'Gustavo Fring', 'Fast Food', 'Active', 1), 
+('Vamonos Pest', 'LLC', 'Jesse Pinkman', 'Pest Control', 'Active', 1), 
+('Hamlin, Hamlin & McGill', 'Law Firm', 'Howard Hamlin', 'Legal', 'Inactive', 0), 
+('A1A Car Wash', 'Corporation', 'Skyler White', 'Automotive', 'Active', 1);
+
+INSERT INTO [User] (Username, Password, Email, FirstName, LastName, UserType, Department, AdminType, BusinessPartnerID)
+VALUES
+('slippinjimmy', 'bigmoney123', 'jimmy@bettercallsaul.com', 'Jimmy', 'McGill', 'Faculty', 'Legal', 'Managing Partner', 1),
+('fringmastermind', 'chicken123', 'gus@polloshermanos.com', 'Gustavo', 'Fring', 'Faculty', 'Operations', NULL, 2),
+('yeahscience', 'yo123', 'jesse@vamonospest.com', 'Jesse', 'Pinkman', 'Admin', 'Logistics', NULL, 3),
+('howardh', 'legacy123', 'howard@hhmlaw.com', 'Howard', 'Hamlin', 'RepOfBusiness', 'Legal', NULL, 4),
+('skylerw', 'blue123', 'skyler@a1acarwash.com', 'Skyler', 'White', 'RepOfBusiness', 'Finance', NULL, 5);
+
+-- Insert into Grant FIRST to ensure foreign keys exist
+INSERT INTO [Grant] (GrantName, Category, FundingSource, SubmissionDate, AwardDate, Amount, Status, LeadFacultyID, BusinessPartnerID)
+VALUES 
+('Legal Defense Fund', 'Law', 'State Bar Association', '2024-01-15', '2024-03-10', 50000.00, 'Approved', 1, 1),
+('Fast Food Expansion', 'Business', 'Investor Group', '2024-02-10', NULL, 75000.00, 'Pending', 2, 2),
+('Pest Control R&D', 'Environmental Science', 'Private Fund', '2024-03-05', '2024-04-20', 30000.00, 'Approved', 3, 3),
+('Corporate Law Seminar', 'Legal', 'National Law Association', '2024-02-20', '2024-05-01', 100000.00, 'Approved', 4, 4),
+('Financial Training Program', 'Education', 'BankCorp', '2024-01-30', NULL, 40000.00, 'Pending', 5, 5);
+
+-- Now insert projects, ensuring they reference valid GrantIDs
+INSERT INTO Project (Title, DueDate, CreatedBy, BusinessPartnerID, GrantID)
+VALUES 
+('Pro Bono Legal Services', '2024-12-31', 1, 1, 1),
+('Franchise Expansion', '2025-06-15', 2, 2, 2),
+('New Pest Control Formula', '2024-11-20', 3, 3, 3),
+('Legal Ethics Conference', '2025-08-30', 4, 4, 4),
+('Finance for Small Businesses', '2025-05-10', 5, 5, 5);
+
+INSERT INTO Message (SenderID, RecipientID, Subject, Body, Timestamp)
+VALUES 
+(1, 2, 'Legal Consultation', 'We need to discuss a potential case.', GETDATE()),
+(2, 3, 'Business Growth', 'Expanding the brand—let’s strategize.', GETDATE()),
+(3, 4, 'New Product Testing', 'We might have something groundbreaking.', GETDATE()),
+(4, 5, 'Conference Plans', 'We need a guest speaker.', GETDATE()),
+(5, 1, 'Financial Advice', 'How do we structure this legally?', GETDATE());
