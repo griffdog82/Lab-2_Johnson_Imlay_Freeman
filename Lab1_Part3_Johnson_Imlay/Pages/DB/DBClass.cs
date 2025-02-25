@@ -45,7 +45,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
         public static bool AddUser(string username, string password, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
             {
                 conn.Open();
                 string query = @"INSERT INTO [User] 
@@ -67,7 +67,9 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                     return cmd.ExecuteNonQuery() > 0;
                 }
             }
-        } // This method should allow Ezell's comments to be rectifyed and the method to be used in the AddUser.cshtml.cs file
+        }
+
+        // This method should allow Ezell's comments to be rectified and the method to be used in the AddUser.cshtml.cs file
 
 
 
@@ -75,9 +77,9 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
 
 
-        public static List<BusinessPartner> GetBusinessPartners()
+        public static List<BusinessPartner> LoadBusinessPartners()
         {
-            List<BusinessPartner> partners = new List<BusinessPartner>();
+            List<BusinessPartner> partners = new();
             using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
             {
                 conn.Open();
