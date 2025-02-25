@@ -41,7 +41,40 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
-        //Comment 1: This method inserts a new user into the database. It takes in the user's username, password, email, first name, last name, user type, department, admin type, and business partner ID. It then creates a new connection to the database and uses a query to insert the user's information into the User table. The method returns the number of rows affected by the query.
+        //This should directly conflict with Griffin's changes
+
+        public static bool AddUser(string username, string password, string? email, string firstName, string lastName, string userType, string? department, string? adminType, int? businessPartnerID)
+        {
+            using (SqlConnection conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = @"INSERT INTO [User] 
+                        (Username, Password, Email, FirstName, LastName, UserType, Department, AdminType, BusinessPartnerID) 
+                        VALUES (@Username, @Password, @Email, @FirstName, @LastName, @UserType, @Department, @AdminType, @BusinessPartnerID)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Username", username);
+                    cmd.Parameters.AddWithValue("@Password", password);  // Should be hashed
+                    cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(email) ? DBNull.Value : email);
+                    cmd.Parameters.AddWithValue("@FirstName", firstName);
+                    cmd.Parameters.AddWithValue("@LastName", lastName);
+                    cmd.Parameters.AddWithValue("@UserType", userType);
+                    cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(department) ? DBNull.Value : department);
+                    cmd.Parameters.AddWithValue("@AdminType", string.IsNullOrEmpty(adminType) ? DBNull.Value : adminType);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", businessPartnerID.HasValue ? businessPartnerID.Value : DBNull.Value);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        } // This method should allow Ezell's comments to be rectifyed and the method to be used in the AddUser.cshtml.cs file
+
+
+
+
+
+
+
         public static List<BusinessPartner> GetBusinessPartners()
         {
             List<BusinessPartner> partners = new List<BusinessPartner>();

@@ -54,45 +54,45 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Users
                 return Page();
             }///This if statement checks to ensure that the model state is valid. If it is not, the page is reloaded with the business partners reloaded as well.
 
-            try
-            {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
-                {
-                    conn.Open();
-                    string query = @"INSERT INTO [User] 
-                                    (Username, Password, Email, FirstName, LastName, UserType, Department, AdminType, BusinessPartnerID) 
-                                    VALUES (@Username, @Password, @Email, @FirstName, @LastName, @UserType, @Department, @AdminType, @BusinessPartnerID)";
+            //try
+            //{
+            //    using (SqlConnection conn = new SqlConnection(_connectionString))
+            //    {
+            //        conn.Open();
+            //        string query = @"INSERT INTO [User] 
+            //                        (Username, Password, Email, FirstName, LastName, UserType, Department, AdminType, BusinessPartnerID) 
+            //                        VALUES (@Username, @Password, @Email, @FirstName, @LastName, @UserType, @Department, @AdminType, @BusinessPartnerID)";
 
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Username", Username);
-                        cmd.Parameters.AddWithValue("@Password", Password);
-                        cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(Email) ? DBNull.Value : Email);
-                        cmd.Parameters.AddWithValue("@FirstName", FirstName);
-                        cmd.Parameters.AddWithValue("@LastName", LastName);
-                        cmd.Parameters.AddWithValue("@UserType", UserType);
-                        cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(Department) ? DBNull.Value : Department);
-                        cmd.Parameters.AddWithValue("@AdminType", string.IsNullOrEmpty(AdminType) ? DBNull.Value : AdminType);
-                        cmd.Parameters.AddWithValue("@BusinessPartnerID", BusinessPartnerID.HasValue ? BusinessPartnerID.Value : DBNull.Value);
+            //        using (SqlCommand cmd = new SqlCommand(query, conn))
+            //        {
+            //            cmd.Parameters.AddWithValue("@Username", Username);
+            //            cmd.Parameters.AddWithValue("@Password", Password);
+            //            cmd.Parameters.AddWithValue("@Email", string.IsNullOrEmpty(Email) ? DBNull.Value : Email);
+            //            cmd.Parameters.AddWithValue("@FirstName", FirstName);
+            //            cmd.Parameters.AddWithValue("@LastName", LastName);
+            //            cmd.Parameters.AddWithValue("@UserType", UserType);
+            //            cmd.Parameters.AddWithValue("@Department", string.IsNullOrEmpty(Department) ? DBNull.Value : Department);
+            //            cmd.Parameters.AddWithValue("@AdminType", string.IsNullOrEmpty(AdminType) ? DBNull.Value : AdminType);
+            //            cmd.Parameters.AddWithValue("@BusinessPartnerID", BusinessPartnerID.HasValue ? BusinessPartnerID.Value : DBNull.Value);
 
-                        int rowsAffected = cmd.ExecuteNonQuery();
+            //            int rowsAffected = cmd.ExecuteNonQuery();
 
-                        if (rowsAffected > 0)
-                        {
-                            Message = "User added successfully!";
-                            return RedirectToPage("/Admin/Users/ViewUsers");
-                        }
-                        else
-                        {
-                            Message = "Error adding user.";
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Message = "Database Error: " + ex.Message;
-            }
+            //            if (rowsAffected > 0)
+            //            {
+            //                Message = "User added successfully!";
+            //                return RedirectToPage("/Admin/Users/ViewUsers");
+            //            }
+            //            else
+            //            {
+            //                Message = "Error adding user.";
+            //            }
+            //        }
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    Message = "Database Error: " + ex.Message;
+            //}
 
             BusinessPartners = LoadBusinessPartners();
             return Page();
