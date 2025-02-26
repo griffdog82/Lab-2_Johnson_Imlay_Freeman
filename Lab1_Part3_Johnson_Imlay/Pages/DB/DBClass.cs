@@ -525,8 +525,32 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        public static bool EditTask(int taskID, string description, DateTime dueDate, string status)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "UPDATE Task SET Description = @Description, DueDate = @DueDate, Status = @Status WHERE TaskID = @TaskID";
 
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@TaskID", taskID);
+                    cmd.Parameters.AddWithValue("@Description", description);
+                    cmd.Parameters.AddWithValue("@DueDate", dueDate);
+                    cmd.Parameters.AddWithValue("@Status", status);
 
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+        public class TaskModel
+        {
+            public int TaskID { get; set; }
+            public int ProjectID { get; set; }
+            public string Description { get; set; } = "";
+            public DateTime DueDate { get; set; }
+            public string Status { get; set; } = "";
+        }
 
 
 
@@ -674,31 +698,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        #endregion // SHould be at line 701.  This is the end of the GriffinLand region.
+#endregion // SHould be at line 701.  This is the end of the GriffinLand region.
         // ================================
         // END: Griffin Section
         // ================================

@@ -1,3 +1,4 @@
+using Lab1_Part3_Johnson_Imlay.Pages.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
@@ -43,29 +44,16 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                bool success = DBClass.EditTask(TaskID, Description, DueDate, Status);
+
+                if (success)
                 {
-                    conn.Open();
-                    string query = "UPDATE Task SET Description = @Description, DueDate = @DueDate, Status = @Status WHERE TaskID = @TaskID";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@TaskID", TaskID);
-                        cmd.Parameters.AddWithValue("@Description", Description);
-                        cmd.Parameters.AddWithValue("@DueDate", DueDate);
-                        cmd.Parameters.AddWithValue("@Status", Status);
-
-                        int rowsAffected = cmd.ExecuteNonQuery();
-                        if (rowsAffected > 0)
-                        {
-                            Message = "Task updated successfully!";
-                            return RedirectToPage("/Admin/Projects/ProjectTaskManagement", new { id = ProjectID });
-                        }
-                        else
-                        {
-                            Message = "Error updating task.";
-                        }
-                    }
+                    Message = "Task updated successfully!";
+                    return RedirectToPage("/Admin/Projects/ProjectTaskManagement", new { id = ProjectID });
+                }
+                else
+                {
+                    Message = "Error updating task.";
                 }
             }
             catch (Exception ex)
@@ -75,6 +63,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
 
             return Page();
         }
+
 
         private void LoadTask()
         {
