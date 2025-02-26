@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Data.SqlClient;
+using Lab1_Part3_Johnson_Imlay.Pages.DB;
 
 namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
 {
     public class EditTaskModel : PageModel
     {
-        private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
+        
 
         [BindProperty]
         public int TaskID { get; set; }
@@ -32,7 +33,19 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
         public void OnGet(int id)
         {
             TaskID = id;
-            LoadTask();
+            DBClass.TaskModel? task = DBClass.GetTask(TaskID);
+            if (task != null)
+            {
+                ProjectID = task.ProjectID;
+                Description = task.Description;
+                DueDate = task.DueDate;
+                Status = task.Status;
+            }
+            else
+            {
+                Message = "Task not found.";
+            }
+
         }
 
         public IActionResult OnPost()
@@ -65,26 +78,6 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Tasks
         }
 
 
-        private void LoadTask()
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT ProjectID, Description, DueDate, Status FROM Task WHERE TaskID = @TaskID", conn))
-                {
-                    cmd.Parameters.AddWithValue("@TaskID", TaskID);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            ProjectID = reader.GetInt32(0);
-                            Description = reader.GetString(1);
-                            DueDate = reader.GetDateTime(2);
-                            Status = reader.GetString(3);
-                        }
-                    }
-                }
-            }
-        }
+        
     }
 }
