@@ -15,7 +15,7 @@
                 @foreach (var sender in Model.Senders)
                 {
                     <option value="@sender.UserID" selected="@(Model.SelectedSenderID == sender.UserID ? "selected" : null)">
-                        @sender.FullName
+                        @sender.FirstName @sender.LastName
                     </option>
                 }
             </select>

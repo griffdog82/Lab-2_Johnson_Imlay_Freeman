@@ -1079,6 +1079,125 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        //MessageList.cshtml.cs
+        public static List<MessageModel> GetMessages(int recipientID, int? senderID = null)
+        {
+            List<MessageModel> messages = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+
+                string query = @"
+            SELECT m.MessageID, 
+                   u.FirstName + ' ' + u.LastName AS SenderName, 
+                   m.Subject, 
+                   m.Timestamp
+            FROM Message m
+            JOIN [User] u ON m.SenderID = u.UserID
+            WHERE m.RecipientID = @RecipientID";
+
+                if (senderID.HasValue)
+                {
+                    query += " AND m.SenderID = @SenderID";
+                }
+
+                query += " ORDER BY m.Timestamp DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@RecipientID", recipientID);
+
+                    if (senderID.HasValue)
+                    {
+                        cmd.Parameters.AddWithValue("@SenderID", senderID.Value);
+                    }
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            messages.Add(new MessageModel
+                            {
+                                MessageID = reader.GetInt32(0),
+                                SenderName = reader.GetString(1),
+                                Subject = reader.IsDBNull(2) ? "(No Subject)" : reader.GetString(2),
+                                Timestamp = reader.GetDateTime(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return messages;
+        }
+        public class MessageModel
+        {
+            public int MessageID { get; set; }
+            public string SenderName { get; set; } = "";
+            public string Subject { get; set; } = "";
+            public string Body { get; set; } = "";
+            public DateTime Timestamp { get; set; }
+        }
+        public static List<UserModel> GetMessageSenders()
+        {
+            List<UserModel> senders = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(@"
+            SELECT DISTINCT u.UserID, u.FirstName, u.LastName
+FROM [User] u
+JOIN Message m ON u.UserID = m.SenderID", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        senders.Add(new UserModel
+                        {
+                            UserID = reader.GetInt32(0),
+                            FirstName = reader.GetString(1),
+                            LastName = reader.GetString(2)
+                        });
+                    }
+                }
+            }
+
+            return senders;
+        }
+        public static MessageModel? GetMessageByID(int messageID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(@"
+            SELECT m.MessageID, u.FirstName + ' ' + u.LastName AS SenderName, 
+                   m.Subject, m.Body, m.Timestamp
+            FROM Message m
+            JOIN [User] u ON m.SenderID = u.UserID
+            WHERE m.MessageID = @MessageID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@MessageID", messageID);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new MessageModel
+                            {
+                                MessageID = reader.GetInt32(0),
+                                SenderName = reader.GetString(1),
+                                Subject = reader.IsDBNull(2) ? "(No Subject)" : reader.GetString(2),
+                                Body = reader.GetString(3),
+                                Timestamp = reader.GetDateTime(4)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
 
 
 
