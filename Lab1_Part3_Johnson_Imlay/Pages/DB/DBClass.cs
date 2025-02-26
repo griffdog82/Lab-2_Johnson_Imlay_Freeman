@@ -387,6 +387,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using static Lab1_Part3_Johnson_Imlay.Pages.Admin.Projects.AddProjectModel;
 
 namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 {
@@ -576,6 +577,135 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
             return null;
+        }
+        public class GrantModel { public int GrantID { get; set; } public string FundingSource { get; set; } = ""; public decimal Amount { get; set; } }
+        //AddProject.cshtml.cs
+        //public static List<UserModel> LoadUsers()
+        //{
+        //    List<UserModel> users = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName, LastName FROM [User]", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                users.Add(new UserModel
+        //                {
+        //                    UserID = reader.GetInt32(0),
+        //                    FullName = reader.GetString(1) + " " + reader.GetString(2)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return users;
+        //}
+
+        public static List<UserModel> LoadFacultyMembers()
+        {
+            List<UserModel> faculty = new();
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName, LastName FROM [User] WHERE UserType = 'Faculty'", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        faculty.Add(new UserModel
+                        {
+                            UserID = reader.GetInt32(0),
+                            FirstName = reader.GetString(1), 
+                            LastName = reader.GetString(2)
+                        });
+                    }
+                }
+            }
+            return faculty;
+        }
+
+        //public static List<BusinessPartner> LoadBusinessPartners()
+        //{
+        //    List<BusinessPartner> partners = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT BusinessPartnerID, Name FROM BusinessPartner", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                partners.Add(new BusinessPartner
+        //                {
+        //                    BusinessPartnerID = reader.GetInt32(0),
+        //                    Name = reader.GetString(1)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return partners;
+        //}
+
+        public static List<GrantModel> LoadGrants()
+        {
+            List<GrantModel> grants = new();
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT GrantID, FundingSource, Amount FROM [Grant]", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        grants.Add(new GrantModel
+                        {
+                            GrantID = reader.GetInt32(0),
+                            FundingSource = reader.GetString(1),
+                            Amount = reader.GetDecimal(2)
+                        });
+                    }
+                }
+            }
+            return grants;
+        }
+        public static int AddProject(string title, DateTime dueDate, int createdBy, int? businessPartnerID, int? grantID, int? assignedFacultyID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = @"INSERT INTO Project 
+                        (Title, DueDate, CreatedBy, BusinessPartnerID, GrantID) 
+                        OUTPUT INSERTED.ProjectID
+                        VALUES (@Title, @DueDate, @CreatedBy, @BusinessPartnerID, @GrantID)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@DueDate", dueDate);
+                    cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", businessPartnerID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@GrantID", grantID ?? (object)DBNull.Value);
+
+                    int projectID = (int)cmd.ExecuteScalar();
+
+                    if (assignedFacultyID.HasValue)
+                    {
+                        string assignQuery = @"INSERT INTO ProjectAssignment 
+                                       (ProjectID, UserID, Role) 
+                                       VALUES (@ProjectID, @UserID, 'Faculty Member')";
+
+                        using (SqlCommand assignCmd = new SqlCommand(assignQuery, conn))
+                        {
+                            assignCmd.Parameters.AddWithValue("@ProjectID", projectID);
+                            assignCmd.Parameters.AddWithValue("@UserID", assignedFacultyID.Value);
+                            assignCmd.ExecuteNonQuery();
+                        }
+                    }
+
+                    return projectID;
+                }
+            }
         }
 
 
