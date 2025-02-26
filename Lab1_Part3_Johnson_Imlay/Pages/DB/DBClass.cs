@@ -955,6 +955,70 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
             return projectList;
         }
+        //ProjectTaskManagement.cshtml.cs
+        public static string? GetProjectTitle(int projectID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT Title FROM Project WHERE ProjectID = @ProjectID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public static List<TaskModel> GetTasksByProjectID(int projectID)
+        {
+            List<TaskModel> tasks = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT TaskID, Description, DueDate, Status FROM Task WHERE ProjectID = @ProjectID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            tasks.Add(new TaskModel
+                            {
+                                TaskID = reader.GetInt32(0),
+                                Description = reader.GetString(1),
+                                DueDate = reader.GetDateTime(2),
+                                Status = reader.GetString(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return tasks;
+        }
+        public static bool UpdateTaskStatus(int taskID, string newStatus)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "UPDATE Task SET Status = @Status WHERE TaskID = @TaskID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@TaskID", taskID);
+                    cmd.Parameters.AddWithValue("@Status", newStatus);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
 
 
 
