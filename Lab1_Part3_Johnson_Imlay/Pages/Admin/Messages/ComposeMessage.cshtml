@@ -12,11 +12,22 @@
 }
 
 <form method="post">
+    <div class="mb-3">
+        <label for="UserID" class="form-label">Select Sender:</label>
+        <select asp-for="UserID" class="form-select">
+            <option value="">-- Select a User --</option>
+            @foreach (var user in Model.Users)
+            {
+                <option value="@user.UserID">@user.FirstName @user.LastName</option>
+            }
+        </select>
+    </div>
+
     <label for="RecipientID">Recipient:</label>
     <select asp-for="RecipientID" class="form-select">
         @foreach (var user in Model.Users)
         {
-            <option value="@user.UserID">@user.FullName</option>
+            <option value="@user.UserID">@user.FirstName @user.LastName</option>
         }
     </select>
 

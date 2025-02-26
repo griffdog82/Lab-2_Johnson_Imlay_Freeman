@@ -25,7 +25,7 @@
         <option value="">Select User</option>
         @foreach (var user in Model.Users)
         {
-            <option value="@user.UserID">@user.FullName</option>
+            <option value="@user.UserID">@user.FirstName @user.LastName</option>
         }
     </select>
     <span asp-validation-for="CreatedBy" class="text-danger"></span>
@@ -55,7 +55,7 @@
         <option value="">Select Faculty Member</option>
         @foreach (var faculty in Model.FacultyMembers)
         {
-            <option value="@faculty.UserID">@faculty.FullName</option>
+            <option value="@faculty.UserID">@faculty.FirstName @faculty.LastName</option>
         }
     </select>
     <span asp-validation-for="AssignedFacultyID" class="text-danger"></span>

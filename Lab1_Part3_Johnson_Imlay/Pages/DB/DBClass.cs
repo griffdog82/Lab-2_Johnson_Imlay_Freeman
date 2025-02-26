@@ -387,6 +387,7 @@
 using System;
 using System.Data;
 using System.Data.SqlClient;
+using static Lab1_Part3_Johnson_Imlay.Pages.Admin.Projects.AddProjectModel;
 
 namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 {
@@ -525,32 +526,187 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        public static bool EditTask(int taskID, string description, DateTime dueDate, string status)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "UPDATE Task SET Description = @Description, DueDate = @DueDate, Status = @Status WHERE TaskID = @TaskID";
 
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@TaskID", taskID);
+                    cmd.Parameters.AddWithValue("@Description", description);
+                    cmd.Parameters.AddWithValue("@DueDate", dueDate);
+                    cmd.Parameters.AddWithValue("@Status", status);
 
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+        public class TaskModel
+        {
+            public int TaskID { get; set; }
+            public int ProjectID { get; set; }
+            public string Description { get; set; } = "";
+            public DateTime DueDate { get; set; }
+            public string Status { get; set; } = "";
+        }
+        public static TaskModel? GetTask(int taskID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT ProjectID, Description, DueDate, Status FROM Task WHERE TaskID = @TaskID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@TaskID", taskID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new TaskModel
+                            {
+                                TaskID = taskID,
+                                ProjectID = reader.GetInt32(0),
+                                Description = reader.GetString(1),
+                                DueDate = reader.GetDateTime(2),
+                                Status = reader.GetString(3)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public class GrantModel { public int GrantID { get; set; } public string FundingSource { get; set; } = ""; public decimal Amount { get; set; } }
+        //AddProject.cshtml.cs
+        //public static List<UserModel> LoadUsers()
+        //{
+        //    List<UserModel> users = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName, LastName FROM [User]", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                users.Add(new UserModel
+        //                {
+        //                    UserID = reader.GetInt32(0),
+        //                    FullName = reader.GetString(1) + " " + reader.GetString(2)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return users;
+        //}
 
+        public static List<UserModel> LoadFacultyMembers()
+        {
+            List<UserModel> faculty = new();
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName, LastName FROM [User] WHERE UserType = 'Faculty'", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        faculty.Add(new UserModel
+                        {
+                            UserID = reader.GetInt32(0),
+                            FirstName = reader.GetString(1), 
+                            LastName = reader.GetString(2)
+                        });
+                    }
+                }
+            }
+            return faculty;
+        }
 
+        //public static List<BusinessPartner> LoadBusinessPartners()
+        //{
+        //    List<BusinessPartner> partners = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT BusinessPartnerID, Name FROM BusinessPartner", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                partners.Add(new BusinessPartner
+        //                {
+        //                    BusinessPartnerID = reader.GetInt32(0),
+        //                    Name = reader.GetString(1)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return partners;
+        //}
 
+        public static List<GrantModel> LoadGrants()
+        {
+            List<GrantModel> grants = new();
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT GrantID, FundingSource, Amount FROM [Grant]", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        grants.Add(new GrantModel
+                        {
+                            GrantID = reader.GetInt32(0),
+                            FundingSource = reader.GetString(1),
+                            Amount = reader.GetDecimal(2)
+                        });
+                    }
+                }
+            }
+            return grants;
+        }
+        public static int AddProject(string title, DateTime dueDate, int createdBy, int? businessPartnerID, int? grantID, int? assignedFacultyID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = @"INSERT INTO Project 
+                        (Title, DueDate, CreatedBy, BusinessPartnerID, GrantID) 
+                        OUTPUT INSERTED.ProjectID
+                        VALUES (@Title, @DueDate, @CreatedBy, @BusinessPartnerID, @GrantID)";
 
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Title", title);
+                    cmd.Parameters.AddWithValue("@DueDate", dueDate);
+                    cmd.Parameters.AddWithValue("@CreatedBy", createdBy);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", businessPartnerID ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@GrantID", grantID ?? (object)DBNull.Value);
 
+                    int projectID = (int)cmd.ExecuteScalar();
 
+                    if (assignedFacultyID.HasValue)
+                    {
+                        string assignQuery = @"INSERT INTO ProjectAssignment 
+                                       (ProjectID, UserID, Role) 
+                                       VALUES (@ProjectID, @UserID, 'Faculty Member')";
 
+                        using (SqlCommand assignCmd = new SqlCommand(assignQuery, conn))
+                        {
+                            assignCmd.Parameters.AddWithValue("@ProjectID", projectID);
+                            assignCmd.Parameters.AddWithValue("@UserID", assignedFacultyID.Value);
+                            assignCmd.ExecuteNonQuery();
+                        }
+                    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                    return projectID;
+                }
+            }
+        }
 
 
 
@@ -799,7 +955,277 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
 
             return projectList;
         }
+        //ProjectTaskManagement.cshtml.cs
+        public static string? GetProjectTitle(int projectID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT Title FROM Project WHERE ProjectID = @ProjectID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public static List<TaskModel> GetTasksByProjectID(int projectID)
+        {
+            List<TaskModel> tasks = new();
 
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT TaskID, Description, DueDate, Status FROM Task WHERE ProjectID = @ProjectID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@ProjectID", projectID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            tasks.Add(new TaskModel
+                            {
+                                TaskID = reader.GetInt32(0),
+                                Description = reader.GetString(1),
+                                DueDate = reader.GetDateTime(2),
+                                Status = reader.GetString(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return tasks;
+        }
+        public static bool UpdateTaskStatus(int taskID, string newStatus)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "UPDATE Task SET Status = @Status WHERE TaskID = @TaskID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@TaskID", taskID);
+                    cmd.Parameters.AddWithValue("@Status", newStatus);
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+        //ComposeMessage.cshtml.cs
+        //public static List<UserModel> LoadUsers()
+        //{
+        //    List<UserModel> users = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User]", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                users.Add(new UserModel
+        //                {
+        //                    UserID = reader.GetInt32(0),
+        //                    FullName = reader.GetString(1)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return users;
+        //}
+        public static (string Subject, string Body)? LoadReplyMessage(int messageID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT Subject, Body FROM Message WHERE MessageID = @MessageID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@MessageID", messageID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ("RE: " + reader.GetString(0), "\n\n----- Original Message -----\n" + reader.GetString(1));
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public static bool SendMessage(int senderID, int recipientID, string subject, string body)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "INSERT INTO Message (SenderID, RecipientID, Subject, Body, Timestamp) VALUES (@SenderID, @RecipientID, @Subject, @Body, GETDATE())";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SenderID", senderID);
+                    cmd.Parameters.AddWithValue("@RecipientID", recipientID);
+                    cmd.Parameters.AddWithValue("@Subject", subject);
+                    cmd.Parameters.AddWithValue("@Body", body);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
+        //MessageList.cshtml.cs
+        public static List<MessageModel> GetMessages(int recipientID, int? senderID = null)
+        {
+            List<MessageModel> messages = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+
+                string query = @"
+            SELECT m.MessageID, 
+                   u.FirstName + ' ' + u.LastName AS SenderName, 
+                   m.Subject, 
+                   m.Timestamp
+            FROM Message m
+            JOIN [User] u ON m.SenderID = u.UserID
+            WHERE m.RecipientID = @RecipientID";
+
+                if (senderID.HasValue)
+                {
+                    query += " AND m.SenderID = @SenderID";
+                }
+
+                query += " ORDER BY m.Timestamp DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@RecipientID", recipientID);
+
+                    if (senderID.HasValue)
+                    {
+                        cmd.Parameters.AddWithValue("@SenderID", senderID.Value);
+                    }
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            messages.Add(new MessageModel
+                            {
+                                MessageID = reader.GetInt32(0),
+                                SenderName = reader.GetString(1),
+                                Subject = reader.IsDBNull(2) ? "(No Subject)" : reader.GetString(2),
+                                Timestamp = reader.GetDateTime(3)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return messages;
+        }
+        public class MessageModel
+        {
+            public int MessageID { get; set; }
+            public string SenderName { get; set; } = "";
+            public string Subject { get; set; } = "";
+            public string Body { get; set; } = "";
+            public DateTime Timestamp { get; set; }
+        }
+        public static List<UserModel> GetMessageSenders()
+        {
+            List<UserModel> senders = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(@"
+            SELECT DISTINCT u.UserID, u.FirstName, u.LastName
+FROM [User] u
+JOIN Message m ON u.UserID = m.SenderID", conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        senders.Add(new UserModel
+                        {
+                            UserID = reader.GetInt32(0),
+                            FirstName = reader.GetString(1),
+                            LastName = reader.GetString(2)
+                        });
+                    }
+                }
+            }
+
+            return senders;
+        }
+        public static MessageModel? GetMessageByID(int messageID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(@"
+            SELECT m.MessageID, u.FirstName + ' ' + u.LastName AS SenderName, 
+                   m.Subject, m.Body, m.Timestamp
+            FROM Message m
+            JOIN [User] u ON m.SenderID = u.UserID
+            WHERE m.MessageID = @MessageID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@MessageID", messageID);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new MessageModel
+                            {
+                                MessageID = reader.GetInt32(0),
+                                SenderName = reader.GetString(1),
+                                Subject = reader.IsDBNull(2) ? "(No Subject)" : reader.GetString(2),
+                                Body = reader.GetString(3),
+                                Timestamp = reader.GetDateTime(4)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        public static int InsertGrantApplication(string category, string grantName, string fundingSource, DateTime submissionDate,
+            DateTime? awardDate, decimal amount, string leadFacultyID, string? businessPartnerID, string status)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+
+                string query = @"INSERT INTO [Grant] 
+                               (Category, GrantName, FundingSource, SubmissionDate, AwardDate, Amount, LeadFacultyID, BusinessPartnerID, Status)
+                               VALUES (@Category, @GrantName, @FundingSource, @SubmissionDate, @AwardDate, @Amount, @LeadFacultyID, @BusinessPartnerID, @Status)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Category", category);
+                    cmd.Parameters.AddWithValue("@GrantName", grantName);
+                    cmd.Parameters.AddWithValue("@FundingSource", fundingSource);
+                    cmd.Parameters.AddWithValue("@SubmissionDate", submissionDate);
+                    cmd.Parameters.AddWithValue("@AwardDate", awardDate.HasValue ? (object)awardDate.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Amount", amount);
+                    cmd.Parameters.AddWithValue("@LeadFacultyID", leadFacultyID);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", string.IsNullOrWhiteSpace(businessPartnerID) ? DBNull.Value : businessPartnerID);
+                    cmd.Parameters.AddWithValue("@Status", status);
+
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+        }
 
 
 
