@@ -578,7 +578,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             }
             return null;
         }
-        public class GrantModel { public int GrantID { get; set; } public string FundingSource { get; set; } = ""; public decimal Amount { get; set; } }
+        //public class GrantModel { public int GrantID { get; set; } public string FundingSource { get; set; } = ""; public decimal Amount { get; set; } }
         //AddProject.cshtml.cs
         //public static List<UserModel> LoadUsers()
         //{
@@ -1147,9 +1147,9 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             {
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand(@"
-            SELECT DISTINCT u.UserID, u.FirstName, u.LastName
-FROM [User] u
-JOIN Message m ON u.UserID = m.SenderID", conn))
+                    SELECT DISTINCT u.UserID, u.FirstName, u.LastName
+                    FROM [User] u
+                    JOIN Message m ON u.UserID = m.SenderID", conn))
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
@@ -1172,11 +1172,11 @@ JOIN Message m ON u.UserID = m.SenderID", conn))
             {
                 conn.Open();
                 using (SqlCommand cmd = new SqlCommand(@"
-            SELECT m.MessageID, u.FirstName + ' ' + u.LastName AS SenderName, 
-                   m.Subject, m.Body, m.Timestamp
-            FROM Message m
-            JOIN [User] u ON m.SenderID = u.UserID
-            WHERE m.MessageID = @MessageID", conn))
+                    SELECT m.MessageID, u.FirstName + ' ' + u.LastName AS SenderName, 
+                    m.Subject, m.Body, m.Timestamp
+                    FROM Message m
+                    JOIN [User] u ON m.SenderID = u.UserID
+                    WHERE m.MessageID = @MessageID", conn))
                 {
                     cmd.Parameters.AddWithValue("@MessageID", messageID);
 
@@ -1225,6 +1225,60 @@ JOIN Message m ON u.UserID = m.SenderID", conn))
                     return cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        public static GrantModel? GetGrantDetails(int grantId)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+
+                string query = @"
+                    SELECT GrantName, Category, FundingSource, SubmissionDate, AwardDate, Amount, LeadFacultyID, BusinessPartnerID, Status
+                    FROM [Grant]
+                    WHERE GrantID = @GrantID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@GrantID", grantId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new GrantModel
+                            {
+                                GrantID = grantId,
+                                GrantName = reader.GetString(0),
+                                Category = reader.GetString(1),
+                                FundingSource = reader.GetString(2),
+                                SubmissionDate = reader.GetDateTime(3),
+                                AwardDate = reader.IsDBNull(4) ? (DateTime?)null : reader.GetDateTime(4),
+                                Amount = reader.GetDecimal(5),
+                                LeadFacultyID = reader.GetInt32(6),
+                                BusinessPartnerID = reader.IsDBNull(7) ? null : reader.GetString(7),
+                                Status = reader.GetString(8)
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+
+        //Grant Details in one place
+        public class GrantModel
+        {
+            public int GrantID { get; set; }
+            public string GrantName { get; set; } = "";
+            public string Category { get; set; } = "";
+            public string FundingSource { get; set; } = "";
+            public DateTime SubmissionDate { get; set; }
+            public DateTime? AwardDate { get; set; } // Nullable
+            public decimal Amount { get; set; }
+            public int LeadFacultyID { get; set; }
+            public string? BusinessPartnerID { get; set; } // Nullable
+            public string Status { get; set; } = "";
         }
 
 

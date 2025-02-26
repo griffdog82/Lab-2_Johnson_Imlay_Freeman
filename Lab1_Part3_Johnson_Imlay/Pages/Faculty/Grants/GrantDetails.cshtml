@@ -6,30 +6,19 @@
 
 <h2>Grant Details</h2>
 
-<div>
-    <strong>Grant Name:</strong> @Model.GrantName
-</div>
-<div>
-    <strong>Category:</strong> @Model.Category
-</div>
-<div>
-    <strong>Funding Source:</strong> @Model.FundingSource
-</div>
-<div>
-    <strong>Submission Date:</strong> @Model.SubmissionDate.ToString("yyyy-MM-dd")
-</div>
-<div>
-    <strong>Award Date:</strong> @Model.AwardDate.ToString("yyyy-MM-dd")
-</div>
-<div>
-    <strong>Amount:</strong> @Model.Amount
-</div>
-<div>
-    <strong>Lead Faculty ID:</strong> @Model.LeadFacultyID
-</div>
-<div>
-    <strong>Business Partner ID:</strong> @Model.BusinessPartnerID
-</div>
-<div>
-    <strong>Status:</strong> @Model.Status
-</div>
+@if (Model.GrantDetails != null)
+{
+    <div><strong>Grant Name:</strong> @Model.GrantDetails.GrantName</div>
+    <div><strong>Category:</strong> @Model.GrantDetails.Category</div>
+    <div><strong>Funding Source:</strong> @Model.GrantDetails.FundingSource</div>
+    <div><strong>Submission Date:</strong> @Model.GrantDetails.SubmissionDate.ToString("yyyy-MM-dd")</div>
+    <div><strong>Award Date:</strong> @(Model.GrantDetails.AwardDate.HasValue ? Model.GrantDetails.AwardDate.Value.ToString("yyyy-MM-dd") : "N/A")</div>
+    <div><strong>Amount:</strong> @Model.GrantDetails.Amount</div>
+    <div><strong>Lead Faculty ID:</strong> @Model.GrantDetails.LeadFacultyID</div>
+    <div><strong>Business Partner ID:</strong> @(string.IsNullOrEmpty(Model.GrantDetails.BusinessPartnerID) ? "N/A" : Model.GrantDetails.BusinessPartnerID)</div>
+    <div><strong>Status:</strong> @Model.GrantDetails.Status</div>
+}
+else
+{
+    <p>No grant details found.</p>
+}
