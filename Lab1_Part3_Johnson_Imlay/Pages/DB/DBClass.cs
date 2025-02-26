@@ -384,6 +384,7 @@
 //    }
 //}
 
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -1199,6 +1200,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             return null;
         }
 
+        //Method for Inserting data into the GrantApplication
         public static int InsertGrantApplication(string category, string grantName, string fundingSource, DateTime submissionDate,
             DateTime? awardDate, decimal amount, string leadFacultyID, string? businessPartnerID, string status)
         {
@@ -1227,6 +1229,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             }
         }
 
+        //Method for Getting the GrantDetails
         public static GrantModel? GetGrantDetails(int grantId)
         {
             using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
@@ -1266,7 +1269,7 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             return null;
         }
 
-        //Grant Details in one place
+        //Keeps all of GrantDetails in one place
         public class GrantModel
         {
             public int GrantID { get; set; }
@@ -1279,6 +1282,77 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
             public int LeadFacultyID { get; set; }
             public string? BusinessPartnerID { get; set; } // Nullable
             public string Status { get; set; } = "";
+        }
+
+        //Method to get list all Grants assigned to chosen Faculty Member
+        public static List<GrantModel> GetGrantsByFaculty(int facultyId)
+        {
+            List<GrantModel> grants = new();
+
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = @"
+                    SELECT GrantID, GrantName, Status
+                    FROM [Grant]
+                    WHERE @FacultyID IN (LeadFacultyID, BusinessPartnerID)
+                    ORDER BY SubmissionDate DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@FacultyID", facultyId);
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            grants.Add(new GrantModel
+                            {
+                                GrantID = reader.GetInt32(0),
+                                GrantName = reader.GetString(1),
+                                Status = reader.GetString(2)
+                            });
+                        }
+                    }
+                }
+            }
+
+            return grants;
+        }
+
+        //Method to load the faculty list
+        public static List<SelectListItem> LoadFacultyList()
+        {
+            List<SelectListItem> facultyList = new(); // Initialize list
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+                {
+                    conn.Open();
+                    string query = "SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User] WHERE UserType = 'Faculty'";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            facultyList.Add(new SelectListItem
+                            {
+                                Value = reader.GetInt32(0).ToString(),
+                                Text = reader.GetString(1)
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                //return an empty list if necessary
+                return new List<SelectListItem>();
+            }
+
+            return facultyList; // return the list
         }
 
 
