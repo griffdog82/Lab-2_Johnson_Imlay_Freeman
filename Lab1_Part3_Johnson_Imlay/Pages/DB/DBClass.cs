@@ -1019,7 +1019,66 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        //ComposeMessage.cshtml.cs
+        //public static List<UserModel> LoadUsers()
+        //{
+        //    List<UserModel> users = new();
+        //    using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+        //    {
+        //        conn.Open();
+        //        using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User]", conn))
+        //        using (SqlDataReader reader = cmd.ExecuteReader())
+        //        {
+        //            while (reader.Read())
+        //            {
+        //                users.Add(new UserModel
+        //                {
+        //                    UserID = reader.GetInt32(0),
+        //                    FullName = reader.GetString(1)
+        //                });
+        //            }
+        //        }
+        //    }
+        //    return users;
+        //}
+        public static (string Subject, string Body)? LoadReplyMessage(int messageID)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT Subject, Body FROM Message WHERE MessageID = @MessageID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@MessageID", messageID);
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return ("RE: " + reader.GetString(0), "\n\n----- Original Message -----\n" + reader.GetString(1));
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        public static bool SendMessage(int senderID, int recipientID, string subject, string body)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                string query = "INSERT INTO Message (SenderID, RecipientID, Subject, Body, Timestamp) VALUES (@SenderID, @RecipientID, @Subject, @Body, GETDATE())";
 
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@SenderID", senderID);
+                    cmd.Parameters.AddWithValue("@RecipientID", recipientID);
+                    cmd.Parameters.AddWithValue("@Subject", subject);
+                    cmd.Parameters.AddWithValue("@Body", body);
+
+                    return cmd.ExecuteNonQuery() > 0;
+                }
+            }
+        }
 
 
 

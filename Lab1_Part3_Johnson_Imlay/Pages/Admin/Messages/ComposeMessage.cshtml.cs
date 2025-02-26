@@ -1,16 +1,13 @@
+using Lab1_Part3_Johnson_Imlay.Pages.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Messages
 {
     public class ComposeMessageModel : PageModel
     {
-        private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
-
         [BindProperty]
         public int RecipientID { get; set; }
 
@@ -21,20 +18,23 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Messages
         public string Body { get; set; } = "";
 
         [BindProperty]
-        public int UserID { get; set; } // Replace with actual logged-in user ID
+        public int UserID { get; set; }// Replace with actual logged-in user ID
 
-
-        public List<UserModel> Users { get; set; } = new();
-
+        public List<DBClass.UserModel> Users { get; set; } = new();
         public string Message { get; set; } = "";
 
         public void OnGet(int? replyTo)
         {
-            LoadUsers();
+            Users = DBClass.LoadUsers();
 
             if (replyTo.HasValue)
             {
-                LoadReplyMessage(replyTo.Value);
+                var replyMessage = DBClass.LoadReplyMessage(replyTo.Value); // Fixed method name
+                if (replyMessage.HasValue)
+                {
+                    Subject = replyMessage.Value.Subject;
+                    Body = replyMessage.Value.Body;
+                }
             }
         }
 
@@ -42,93 +42,22 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Messages
         {
             if (!ModelState.IsValid)
             {
-                LoadUsers();
+                Users = DBClass.LoadUsers();
                 return Page();
             }
 
-            try
+            if (DBClass.SendMessage(UserID, RecipientID, Subject, Body))
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
-                {
-                    conn.Open();
-                    string query = "INSERT INTO Message (SenderID, RecipientID, Subject, Body, Timestamp) VALUES (@SenderID, @RecipientID, @Subject, @Body, GETDATE())";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@SenderID", UserID); // Dynamic sender ID
-                        cmd.Parameters.AddWithValue("@RecipientID", RecipientID);
-                        cmd.Parameters.AddWithValue("@Subject", Subject);
-                        cmd.Parameters.AddWithValue("@Body", Body);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-
                 Message = "Message sent successfully!";
                 return RedirectToPage("MessageList");
             }
-            catch (Exception ex)
+            else
             {
-                Message = "Database Error: " + ex.Message;
+                Message = "Error sending message.";
             }
 
-            LoadUsers();
+            Users = DBClass.LoadUsers();
             return Page();
         }
-
-
-
-        private void LoadUsers()
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User]", conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        Users.Add(new UserModel
-                        {
-                            UserID = reader.GetInt32(0),
-                            FullName = reader.GetString(1)
-                        });
-                    }
-                }
-            }
-        }
-        private void LoadReplyMessage(int replyTo)
-        {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand(
-                    "SELECT Subject, Body FROM Message WHERE MessageID = @MessageID", conn))
-                {
-                    cmd.Parameters.AddWithValue("@MessageID", replyTo);
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            Subject = "RE: " + reader.GetString(0);
-                            Body = "\n\n----- Original Message -----\n" + reader.GetString(1);
-                        }
-                    }
-                }
-            }
-        }
-
-        public class UserModel
-        {
-            public int UserID { get; set; }
-            public string FullName { get; set; } = "";
-        }
-        //public class IActionResult OnPostPopulate()
-        //{ 
-        //    ModelState.Clear();
-
-
-        //    Return Page();)
-
-        //}
     }
 }
