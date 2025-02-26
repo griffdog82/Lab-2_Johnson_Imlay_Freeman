@@ -1,3 +1,4 @@
+using Lab1_Part3_Johnson_Imlay.Pages.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -10,7 +11,6 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Faculty.Grants
 {
     public class GrantApplication : PageModel
     {
-        private readonly string _connectionString = "Server=localhost;Database=Lab1;Trusted_Connection=True;";
         [BindProperty, Required]
         public string Category { get; set; } = "";
 
@@ -43,36 +43,12 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Faculty.Grants
         public void OnGet()
         {
             // Load Faculty Members
-            using (SqlConnection conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
-                using (SqlCommand cmd = new SqlCommand("SELECT UserID, FirstName + ' ' + LastName AS FullName FROM [User] WHERE UserType = 'Faculty'", conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        FacultyMembers.Add(new SelectListItem
-                        {
-                            Value = reader["UserID"].ToString(),
-                            Text = reader["FullName"].ToString()
-                        });
-                    }
-                }
+            FacultyMembers = DBClass.GetFacultyMembers().ConvertAll(faculty =>
+                new SelectListItem { Value = faculty.UserID.ToString(), Text = $"{faculty.FirstName} {faculty.LastName}" });  //looked online on how to concatenate
 
-                // Load Business Partner Representatives
-                using (SqlCommand cmd = new SqlCommand("SELECT BusinessPartnerID, Name FROM BusinessPartner", conn))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        BusinessPartners.Add(new SelectListItem
-                        {
-                            Value = reader["BusinessPartnerID"].ToString(),
-                            Text = reader["Name"].ToString()
-                        });
-                    }
-                }
-            }
+            // Load Business Partner Representatives
+            BusinessPartners = DBClass.LoadBusinessPartners().ConvertAll(partner =>
+                new SelectListItem { Value = partner.BusinessPartnerID.ToString(), Text = partner.Name });
         }
 
         public IActionResult OnPost([FromForm] string action)
@@ -86,37 +62,23 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Faculty.Grants
 
             try
             {
-                using (SqlConnection conn = new SqlConnection(_connectionString))
+                int result = DBClass.InsertGrantApplication(Category, GrantName, FundingSource, SubmissionDate,
+                    AwardDate, Amount, LeadFacultyID, BusinessPartnerID, status);
+
+                if (result > 0)
                 {
-                    conn.Open();
-
-                    string query = @"INSERT INTO [Grant] 
-                                    (Category, GrantName, FundingSource, SubmissionDate, AwardDate, Amount, LeadFacultyID, BusinessPartnerID, Status)
-                                    VALUES (@Category, @GrantName, @FundingSource, @SubmissionDate, @AwardDate, @Amount, @LeadFacultyID, @BusinessPartnerID, @Status)";
-
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Category", Category);
-                        cmd.Parameters.AddWithValue("@GrantName", GrantName);
-                        cmd.Parameters.AddWithValue("@FundingSource", FundingSource);
-                        cmd.Parameters.AddWithValue("@SubmissionDate", SubmissionDate);
-                        cmd.Parameters.AddWithValue("@AwardDate", AwardDate.HasValue ? (object)AwardDate.Value : DBNull.Value);
-                        cmd.Parameters.AddWithValue("@Amount", Amount);
-                        cmd.Parameters.AddWithValue("@LeadFacultyID", LeadFacultyID);
-                        cmd.Parameters.AddWithValue("@BusinessPartnerID",
-                            string.IsNullOrWhiteSpace(BusinessPartnerID) ? DBNull.Value : BusinessPartnerID);
-                        cmd.Parameters.AddWithValue("@Status", status);
-
-                        cmd.ExecuteNonQuery();
-                    }
+                    TempData["Message"] = action == "submit" ? "Application submitted successfully!" : "Draft saved successfully!";
+                    return RedirectToPage("/Faculty/FacultyDashboard");
                 }
-
-                Message = action == "submit" ? "Application submitted successfully!" : "Draft saved successfully!";
-                return RedirectToPage("/Faculty/FacultyDashboard");
+                else
+                {
+                    TempData["Message"] = "Application submitted failed!";
+                    return Page();
+                }
             }
             catch (Exception ex)
             {
-                Message = "Database Error: " + ex.Message;
+                TempData["Message"] = "Database Error: " + ex.Message;
                 return Page();
             }
         }

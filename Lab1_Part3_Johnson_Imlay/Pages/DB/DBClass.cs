@@ -1199,6 +1199,34 @@ JOIN Message m ON u.UserID = m.SenderID", conn))
             return null;
         }
 
+        public static int InsertGrantApplication(string category, string grantName, string fundingSource, DateTime submissionDate,
+            DateTime? awardDate, decimal amount, string leadFacultyID, string? businessPartnerID, string status)
+        {
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+
+                string query = @"INSERT INTO [Grant] 
+                               (Category, GrantName, FundingSource, SubmissionDate, AwardDate, Amount, LeadFacultyID, BusinessPartnerID, Status)
+                               VALUES (@Category, @GrantName, @FundingSource, @SubmissionDate, @AwardDate, @Amount, @LeadFacultyID, @BusinessPartnerID, @Status)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@Category", category);
+                    cmd.Parameters.AddWithValue("@GrantName", grantName);
+                    cmd.Parameters.AddWithValue("@FundingSource", fundingSource);
+                    cmd.Parameters.AddWithValue("@SubmissionDate", submissionDate);
+                    cmd.Parameters.AddWithValue("@AwardDate", awardDate.HasValue ? (object)awardDate.Value : DBNull.Value);
+                    cmd.Parameters.AddWithValue("@Amount", amount);
+                    cmd.Parameters.AddWithValue("@LeadFacultyID", leadFacultyID);
+                    cmd.Parameters.AddWithValue("@BusinessPartnerID", string.IsNullOrWhiteSpace(businessPartnerID) ? DBNull.Value : businessPartnerID);
+                    cmd.Parameters.AddWithValue("@Status", status);
+
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
 
 
 
