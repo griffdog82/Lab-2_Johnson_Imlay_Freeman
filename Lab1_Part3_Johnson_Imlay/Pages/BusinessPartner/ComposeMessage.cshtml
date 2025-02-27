@@ -1,24 +1,44 @@
-﻿<form method="post">
+﻿@page "{replyTo?}"
+@model Lab1_Part3_Johnson_Imlay.Pages.BusinessPartner.ComposeMessageModel
+@{
+    ViewData["Title"] = "Compose Message";
+}
+
+<h2>Compose Message</h2>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <p class="alert alert-info">@Model.Message</p>
+}
+
+<form method="post">
     <div class="mb-3">
-        <label for="recipientId" class="form-label">To:</label>
-        <select name="RecipientID" id="recipientId" class="form-select" required>
-            <option value="">Select Recipient</option>
-            @foreach (var user in Model.FacultyList)
+        <label for="UserID" class="form-label">Select Sender:</label>
+        <select asp-for="UserID" class="form-select">
+            <option value="">-- Select a User --</option>
+            @foreach (var user in Model.Users)
             {
-                <option value="@user.UserID">@user.FullName</option>
+                <option value="@user.UserID">@user.FirstName @user.LastName</option>
             }
         </select>
     </div>
 
-    <div class="mb-3">
-        <label for="subject" class="form-label">Subject:</label>
-        <input type="text" name="Subject" id="subject" class="form-control" required />
-    </div>
+    <label for="RecipientID">Recipient:</label>
+    <select asp-for="RecipientID" class="form-select">
+        @foreach (var user in Model.Users)
+        {
+            <option value="@user.UserID">@user.FirstName @user.LastName</option>
+        }
+    </select>
 
-    <div class="mb-3">
-        <label for="body" class="form-label">Message:</label>
-        <textarea name="Body" id="body" class="form-control" rows="5" required></textarea>
-    </div>
+    <label for="Subject">Subject:</label>
+    <input type="text" asp-for="Subject" class="form-control" />
 
-    <button type="submit" asp-page-handler="Send" class="btn btn-success">Send Message</button>
+    <label for="Body">Message:</label>
+    <textarea asp-for="Body" class="form-control" required></textarea>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Send</button>
+    <button type="button" class="btn btn-primary">Populate</button> <!-- Changed type to 'button' -->
+    <a asp-page="ViewMessages" class="btn btn-secondary">Cancel</a>
 </form>

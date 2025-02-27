@@ -1,7 +1,7 @@
-﻿@page
+﻿@page "{grantID?}"
 @model Lab1_Part3_Johnson_Imlay.Pages.BusinessPartner.ViewGrantsModel
 @{
-    ViewData["Title"] = "Grants";
+    ViewData["Title"] = "Available Grants";
 }
 
 <div class="container mt-4">
@@ -17,6 +17,7 @@
                 <th>Award Date</th>
                 <th>Amount ($)</th>
                 <th>Status</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -34,10 +35,29 @@
                             @grant.Status
                         </span>
                     </td>
+                    <td>
+                        <a asp-page="ViewGrants" asp-route-grantID="@grant.GrantID" class="btn btn-info btn-sm">View</a>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <a asp-page="/BusinessPartner/BusinessPartner_Dashboard" class="btn btn-secondary">⬅ Back to Dashboard</a>
+    @if (Model.SelectedGrant != null)
+    {
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <strong>📄 Grant Details</strong>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Grant Name: @Model.SelectedGrant.GrantName</h5>
+                <h6 class="card-subtitle mb-2 text-muted">Category: @Model.SelectedGrant.Category</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Funding Source: @Model.SelectedGrant.FundingSource</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Submission Date: @Model.SelectedGrant.SubmissionDate.ToString("yyyy-MM-dd")</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Award Date: @(Model.SelectedGrant.AwardDate?.ToString("yyyy-MM-dd") ?? "N/A")</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Amount: @Model.SelectedGrant.Amount.ToString("C")</h6>
+                <h6 class="card-subtitle mb-2 text-muted">Status: @Model.SelectedGrant.Status</h6>
+            </div>
+        </div>
+    }
 </div>
