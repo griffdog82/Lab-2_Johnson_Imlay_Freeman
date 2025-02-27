@@ -707,6 +707,19 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.DB
                 }
             }
         }
+        public static int GetCurrentUserID()
+        {
+            // Example: Fetch logged-in UserID from session or database
+            using (SqlConnection conn = new SqlConnection(Lab1DBConnString))
+            {
+                conn.Open();
+                using (SqlCommand cmd = new SqlCommand("SELECT UserID FROM [User] WHERE /* YOUR LOGIN LOGIC HERE */", conn)) // TODO: LOGIN @ALL 
+                {
+                    object result = cmd.ExecuteScalar();
+                    return result != null ? Convert.ToInt32(result) : 0; // Return 0 if no user found
+                }
+            }
+        }
 
 
 

@@ -1,4 +1,4 @@
-using Lab1_Part3_Johnson_Imlay.Pages.DB;
+﻿using Lab1_Part3_Johnson_Imlay.Pages.DB;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
@@ -29,9 +29,18 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Messages
 
         public void OnGet(int? id, int? senderId)
         {
+            // ✅ Fetch UserID dynamically from DB
+            UserID = DBClass.GetCurrentUserID();  // Replace with actual method
+
+            // ✅ Ensure SelectedSenderID updates properly
             SelectedSenderID = senderId;
+
+            // ✅ Debugging output (Remove after verifying)
+            Console.WriteLine($"Fetched UserID: {UserID}, SelectedSenderID: {SelectedSenderID}");
+
+            // ✅ Fetch senders and messages
             Senders = DBClass.GetMessageSenders();
-            Messages = DBClass.GetMessages(UserID, senderId); // Load messages for the user
+            Messages = DBClass.GetMessages(UserID, senderId);
 
             if (id.HasValue)
             {
@@ -42,8 +51,9 @@ namespace Lab1_Part3_Johnson_Imlay.Pages.Admin.Messages
 
 
 
-        
 
-       
+
+
+
     }
 }
